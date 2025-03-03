@@ -1,0 +1,66 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-service
+    ports:
+      - '${PORT}:${PORT}'
+    env_file:
+      - .env.example
+    environment:
+      - PORT=${PORT}
+      - SECRET_KEY=${SECRET_KEY}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - R2_ACCESS_KEY=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+    depends_on:
+      - db
+      - r2
+    networks:
+      - app-network
+
+  db:
+    image: postgres:latest
+    container_name: postgres-db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  r2:
+    image: minio/minio
+    container_name: minio-storage
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${R2_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${R2_SECRET_ACCESS_KEY}
+    command: server /data --console-address ":9001"
+    volumes:
+      - r2-data:/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  r2-data:

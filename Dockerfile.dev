@@ -1,0 +1,11 @@
+FROM node:lts
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} +
+
+EXPOSE 4000
+
+ENTRYPOINT [ "sh", "./.docker/entrypoint.dev.sh" ]
