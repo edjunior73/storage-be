@@ -11,7 +11,6 @@ RUN yarn prisma:generate && yarn build
 RUN npm prune --production 
 
 FROM node:18.18.2-alpine AS runtime
-RUN find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} +
 ARG VERSION="1.0.0"
 ENV VERSION $VERSION
 ENV NODE_ENV Stg
